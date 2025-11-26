@@ -2,376 +2,361 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invito 18 Anni - Starry Night</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>18° Sofia - Official Invite</title>
+    
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Playball&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        petrol: '#00334e',
+                        teal: '#2d5a60',
+                        silver: '#C0C0C0',
+                        'silver-light': '#eef2f3',
+                        'silver-dark': '#8e9eab',
+                        'envelope-bg': '#1a3c40',
+                    },
+                    fontFamily: {
+                        script: ['"Great Vibes"', 'cursive'],
+                        serif: ['"Playfair Display"', 'serif'],
+                        sans: ['"Lato"', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        /* --- RESET & BASE --- */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body, html {
-            height: 100%;
-            width: 100%;
-            font-family: 'Montserrat', sans-serif;
-            overflow: hidden;
-        }
-
+        /* --- Core Layout --- */
         body {
+            margin: 0;
+            height: 100vh;
+            /* Evita scroll sulla pagina principale */
+            overflow: hidden; 
             display: flex;
             justify-content: center;
             align-items: center;
-            /* Palette Notturna: Blu Petrolio -> Ottanio */
+            font-family: 'Lato', sans-serif;
+            perspective: 1500px;
             background: linear-gradient(to bottom, #00334e, #2d5a60);
-            position: relative;
-            color: #fff;
         }
 
-        /* --- CANVAS PARTICELLE (Sfondo) --- */
+        /* --- Canvas Particelle --- */
         #star-canvas {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0; /* Dietro a tutto */
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0;
             pointer-events: none;
         }
 
-        /* --- CONTENITORE PRINCIPALE --- */
-        .envelope-container {
+        /* --- Scene Container --- */
+        .scene {
             position: relative;
             width: 90%;
-            max-width: 400px;
-            height: 90%;
-            max-height: 650px;
-            perspective: 1500px;
-            z-index: 10; /* Sopra le particelle */
+            max-width: 360px;
+            height: 240px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            transition: transform 0.8s ease;
+            z-index: 10;
         }
 
-        /* --- BUSTA ANIMATA --- */
-        .envelope-front {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            /* Sfondo Busta: Ottanio scuro con bordo sottile */
-            background: linear-gradient(135deg, #1a3c40 0%, #2d5a60 100%);
-            border-radius: 20px;
-            transform-style: preserve-3d;
-            transform-origin: bottom;
-            transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease 0.5s;
-            pointer-events: auto;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
-            border: 1px solid rgba(192, 192, 192, 0.3);
-            z-index: 2;
-        }
-
-        .envelope-container.open .envelope-front {
-            transform: rotateX(-180deg);
-            opacity: 0;
+        .scene.opened {
             pointer-events: none;
         }
 
-        /* --- INTERNO (CARD) --- */
-        .envelope-inner {
+        .scene.opened .envelope-body, 
+        .scene.opened .envelope-flap, 
+        .scene.opened .click-hint {
+            opacity: 0;
+            transform: translateY(100px) scale(0.8);
+            transition: all 0.8s ease;
+        }
+
+        /* --- Envelope --- */
+        .envelope-body {
             position: absolute;
-            top: 0;
-            left: 0;
+            bottom: 0;
             width: 100%;
             height: 100%;
-            /* Sfondo Card Interna: Blu Petrolio molto scuro (Glassmorphism) */
-            background: rgba(0, 30, 46, 0.85); /* Un po' più trasparente per vedere le particelle dietro */
-            backdrop-filter: blur(8px);
-            border-radius: 20px;
-            border: 2px solid rgba(192, 192, 192, 0.5); /* Bordo Argento */
-            
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 30px 20px;
-            
-            opacity: 0;
-            transform: scale(0.9) translateY(20px);
-            transition: all 1s ease 0.3s;
-            z-index: 1;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.7);
-        }
-
-        .envelope-container.open .envelope-inner {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-        }
-
-        /* --- SIGILLO --- */
-        .seal {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 110px;
-            height: 110px;
-            /* Sigillo Argento */
-            background: radial-gradient(circle, #eef2f3 0%, #8e9eab 100%);
-            border: 2px solid #fff;
-            border-radius: 50%;
+            background: #1a3c40;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            z-index: 2;
             cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            color: #00334e;
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 700;
-            box-shadow: 0 0 20px rgba(192, 192, 192, 0.4);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            z-index: 100;
+            transition: transform 0.3s;
+            border: 1px solid rgba(192, 192, 192, 0.3);
+        }
+        .envelope-body:hover { transform: scale(1.02); }
+
+        .pocket {
+            position: absolute;
+            bottom: 0; left: 0; width: 100%; height: 100%;
+            z-index: 3;
+            pointer-events: none;
+        }
+        .pocket::before, .pocket::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            width: 0; height: 0;
+            border-style: solid;
+            z-index: 3;
+        }
+        .pocket::before {
+            left: 0;
+            border-width: 0 0 240px 180px;
+            border-color: transparent transparent #234b50 transparent;
+            border-radius: 0 0 0 10px;
+        }
+        .pocket::after {
+            right: 0;
+            border-width: 0 180px 240px 0;
+            border-color: transparent transparent #234b50 transparent;
+            border-radius: 0 0 10px 0;
         }
 
-        .seal:hover {
-            transform: translate(-50%, -50%) scale(1.05);
-            box-shadow: 0 0 30px rgba(255, 255, 255, 0.6);
-        }
-
-        .seal::before {
-            content: 'APRI QUI';
-            margin-top: 2px;
+        .envelope-flap {
+            position: absolute;
+            top: 0; left: 0;
+            width: 0; height: 0;
+            border-style: solid;
+            border-width: 120px 180px 0 180px;
+            border-color: #2d5a60 transparent transparent transparent;
+            z-index: 4;
+            transform-origin: top;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 5px 5px 0 0;
+            pointer-events: none;
         }
         
-        .seal::after {
-            content: '★';
-            font-size: 1.2rem;
-            margin-bottom: 2px;
-            color: #00334e;
+        .scene.opening .envelope-flap {
+            transform: rotateX(180deg);
+            z-index: 1;
         }
 
-        /* --- CONTENUTO INTERNO --- */
-        .content {
+        .click-hint {
+            position: absolute;
+            bottom: -40px;
             width: 100%;
             text-align: center;
-            color: #fff;
-            max-width: 320px;
-            height: 100%;
+            color: #eef2f3;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            animation: pulse-slow 2s infinite;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        /* --- THE CARD (NO SCROLL VERSION) --- */
+        .card {
+            position: absolute;
+            bottom: 10px;
+            width: 92%;
+            max-width: 340px;
+            height: auto;
+            min-height: 480px;
+            
+            background: linear-gradient(145deg, #001e2e 0%, #00334e 100%);
+            border: 2px solid rgba(192, 192, 192, 0.6);
+            border-radius: 12px;
+            
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            
+            transform: translateY(20%) scale(0.9);
+            z-index: 1;
+            opacity: 0;
+            transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 10px 0;
         }
 
-        .number-18 {
-            font-family: 'Playball', cursive;
-            font-size: 5.5rem;
-            line-height: 1;
-            margin: 10px 0;
-            
-            /* Gradiente Argento Metallico */
-            background: linear-gradient(45deg, #8e9eab, #fff, #8e9eab);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            
-            filter: drop-shadow(0 0 15px rgba(255,255,255,0.4));
-        }
-
-        .intro-message {
-            font-family: 'Playball', cursive;
-            font-size: 2.2rem;
-            color: #eef2f3;
-            margin-bottom: 5px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        .scene.opening .card {
+            opacity: 1;
+            z-index: 5;
+            transform: translateY(-100px) scale(0.95);
         }
         
-        .invitation-text {
-            font-size: 0.9rem;
-            color: #b0bec5;
-            margin-bottom: 20px;
-            font-weight: 400;
-            letter-spacing: 0.5px;
+        /* Opened State: Full Screen ma contenuto */
+        .scene.opened .card {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            z-index: 100;
+            
+            /* Dimensioni fisse relative alla viewport per evitare scroll */
+            width: 90vw;
+            max-width: 400px;
+            
+            /* Altezza massima limitata per stare nello schermo */
+            height: 85vh; 
+            max-height: 700px; /* Non diventare troppo alto su desktop */
+            
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9);
+            border: 2px solid rgba(192, 192, 192, 0.8);
+            
+            /* Layout flessibile interno */
+            padding: 20px; 
+            overflow: hidden; /* Blocca scroll */
+            
+            /* FIX: Riabilita click sulla card */
+            pointer-events: auto;
         }
 
-        .details-section {
-            margin-bottom: 15px;
-            padding: 15px;
-            background-color: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 10px;
+        /* --- Tipografia & Styles --- */
+        .metallic-silver-text {
+            background: linear-gradient(45deg, #8e9eab, #eef2f3, #8e9eab);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
         }
+        .silver-accent { color: #C0C0C0; }
 
-        .detail-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            padding-bottom: 10px;
-            border-bottom: 1px dashed rgba(255,255,255,0.2);
-        }
-
-        .detail-row:last-child {
-            margin-bottom: 0;
-            padding-bottom: 0;
-            border-bottom: none;
-        }
-
-        .detail-label {
-            font-weight: 600;
-            color: #8e9eab;
-            font-size: 0.8rem;
+        .btn-silver {
+            background: linear-gradient(135deg, #eef2f3 0%, #C0C0C0 100%);
+            color: #00334e;
+            font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 1px;
-        }
-
-        .detail-value {
-            font-weight: 400;
-            color: #fff;
-            font-size: 0.95rem;
-        }
-
-        .map-cta {
-            display: inline-block;
-            background: linear-gradient(135deg, #eef2f3 0%, #b0bec5 100%);
-            color: #00334e;
-            padding: 12px 25px;
             border-radius: 30px;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 0.9rem;
-            margin-top: 10px;
-            box-shadow: 0 0 15px rgba(255,255,255,0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            width: 80%;
-            margin-left: auto;
-            margin-right: auto;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
         }
-
-        .map-cta:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0 25px rgba(255,255,255,0.5);
-        }
-
-        /* --- RSVP Section --- */
-        .rsvp-section {
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .rsvp-text {
-            font-family: 'Playball', cursive;
-            font-size: 1.5rem;
-            color: #eef2f3;
-            margin-bottom: 10px;
-        }
-
-        .rsvp-options {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-        }
+        .btn-silver:active { transform: scale(0.98); }
 
         .rsvp-btn {
-            background-color: rgba(0, 51, 78, 0.8);
-            border: 1px solid #8e9eab;
+            background: rgba(0, 51, 78, 0.6);
+            border: 2px solid #8e9eab;
             color: #eef2f3;
-            padding: 8px 25px;
-            border-radius: 20px;
-            text-decoration: none;
+            border-radius: 25px;
+            transition: all 0.3s;
             font-weight: 600;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
         }
-
         .rsvp-btn:hover {
-            background-color: #eef2f3;
+            background: #eef2f3;
             color: #00334e;
-            transform: translateY(-2px);
-            box-shadow: 0 0 10px rgba(255,255,255,0.3);
+            border-color: #eef2f3;
         }
 
-        /* --- Responsive --- */
-        @media (max-height: 700px) {
-            .number-18 { font-size: 4rem; margin: 5px 0; }
-            .intro-message { font-size: 1.8rem; }
-            .envelope-container { max-height: 95%; }
-            .details-section { padding: 10px; margin-bottom: 10px; }
-            .rsvp-section { margin-top: 10px; padding-top: 10px; }
+        /* Media Queries per adattamento estremo in altezza */
+        @media (max-height: 600px) {
+            .scene.opened .card { height: 95vh; padding: 10px; }
+            .hidden-short { display: none; } /* Nascondi elementi decorativi se troppo basso */
         }
+        @media (max-width: 360px) {
+             .scene { width: 95%; }
+        }
+
     </style>
 </head>
 <body>
 
-    <!-- Canvas per le particelle argento -->
     <canvas id="star-canvas"></canvas>
 
-    <div class="envelope-container" id="envelope">
-        <!-- FRONTE BUSTA (Copertina) -->
-        <div class="envelope-front">
-            <div class="seal" id="seal"></div>
+    <div class="scene" id="scene">
+        <div class="envelope-body" onclick="openInvite()">
+            <div class="pocket"></div>
         </div>
-        
-        <!-- INTERNO BUSTA (Card Invito) -->
-        <div class="envelope-inner">
-            <div class="content">
+        <div class="envelope-flap" id="flap"></div>
+        <div class="click-hint" id="hint">Tocca per aprire</div>
+
+        <!-- Biglietto -->
+        <div class="card" id="card">
+            
+            <!-- Flex Grow: Spinge il contenuto per occupare lo spazio disponibile -->
+            <div class="flex-1 flex flex-col justify-center items-center">
+                <!-- Header -->
                 <div>
-                    <h2 class="intro-message">Sofia</h2>
-                    <span class="number-18">18</span>
-                    <p class="invitation-text">Festeggia con me!</p>
+                    <h1 class="font-script text-4xl sm:text-5xl md:text-6xl metallic-silver-text leading-none">Sofia</h1>
+                    <p class="text-silver-dark text-[10px] tracking-[0.2em] uppercase mt-2 font-semibold">Festeggia con me!</p>
                 </div>
 
-                <div class="details-section">
-                    <div class="detail-row">
-                        <span class="detail-label">Quando</span>
-                        <span class="detail-value">Sabato, 21 Febbraio</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Ora</span>
-                        <span class="detail-value">Dalle 20:30</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Dove</span>
-                        <span class="detail-value">Casale San Lorenzo</span>
+                <!-- Big Number (Responsive Text Size) -->
+                <div class="relative py-2 sm:py-4">
+                    <div class="font-serif italic text-7xl sm:text-8xl md:text-9xl leading-none metallic-silver-text">18</div>
+                    <div class="flex items-center justify-center gap-2 opacity-80 mt-[-5px]">
+                        <div class="h-[1px] w-8 bg-silver"></div>
+                        <span class="text-silver text-sm">✦</span>
+                        <div class="h-[1px] w-8 bg-silver"></div>
                     </div>
                 </div>
 
-                <a href="https://share.google/9m5rhk4DjkS6YKXgY" target="_blank" class="map-cta">
-                    APRI MAPPA
-                </a>
+                <!-- Testo Corpo (Shrinkable) -->
+                <div class="px-2 mb-2 max-w-[280px]">
+                    <p class="font-script text-xl sm:text-2xl text-silver-light leading-snug">
+                        unisciti a me per un'indimenticabile serata
+                        di divertimento, amici e festeggiamenti!
+                    </p>
+                </div>
 
-                <div class="rsvp-section">
-                    <p class="rsvp-text">Ci sarai?</p>
-                    <div class="rsvp-options">
-                        <!-- Link WhatsApp per confermare -->
-                        <a href="https://wa.me/393281520254?text=Ciao%20Sofia%2C%20confermo%20la%20mia%20presenza%20al%20tuo%2018esimo%21" target="_blank" class="rsvp-btn">Sì</a>
-                        
-                        <!-- Link WhatsApp per declinare -->
-                        <a href="https://wa.me/393281520254?text=Ciao%20Sofia%2C%20mi%20dispiace%20ma%20non%20potr%C3%B2%20esserci%20al%20tuo%2018esimo." target="_blank" class="rsvp-btn">No</a>
+                <!-- Dettagli Compatti -->
+                <div class="space-y-2 my-2 text-silver-light w-full">
+                    <div>
+                        <p class="uppercase tracking-widest text-[9px] text-silver-dark font-bold">Quando</p>
+                        <p class="font-serif text-lg silver-accent">Sabato, 21 Febbraio</p>
+                    </div>
+                    
+                    <div class="flex justify-center gap-6">
+                        <div>
+                            <p class="uppercase tracking-widest text-[9px] text-silver-dark font-bold">Ora</p>
+                            <p class="font-bold text-lg text-white">20:30</p>
+                        </div>
+                        <div>
+                            <p class="uppercase tracking-widest text-[9px] text-silver-dark font-bold">Dove</p>
+                            <p class="font-serif text-lg text-white">Casale S. Lorenzo</p>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Footer Azioni (Fisso in basso nel flex) -->
+            <div class="w-full space-y-3 pt-2 mt-auto">
+                <a href="https://share.google/9m5rhk4DjkS6YKXgY" target="_blank" class="block w-full btn-silver py-3 text-center no-underline text-xs sm:text-sm">
+                    Apri Mappa
+                </a>
+
+                <div class="border-t border-silver-dark/30 pt-2">
+                    <p class="font-script text-silver-dark text-lg mb-2">Ci sarai?</p>
+                    <div class="flex gap-3 h-8 sm:h-10">
+                        <a href="https://wa.me/393281520254?text=Ciao%20Sofia%2C%20confermo%20la%20mia%20presenza%20al%20tuo%2018esimo%21" target="_blank" class="rsvp-btn flex-1 flex items-center justify-center text-xs sm:text-sm no-underline">SÌ</a>
+                        <a href="https://wa.me/393281520254?text=Ciao%20Sofia%2C%20mi%20dispiace%20ma%20non%20potr%C3%B2%20esserci%20al%20tuo%2018esimo." target="_blank" class="rsvp-btn flex-1 flex items-center justify-center text-xs sm:text-sm no-underline">NO</a>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <script>
-        /* --- LOGICA PARTICELLE ARGENTO --- */
+        let isOpen = false;
+        function openInvite() {
+            if (isOpen) return;
+            isOpen = true;
+            const scene = document.getElementById('scene');
+            scene.classList.add('opening');
+            setTimeout(() => { scene.classList.add('opened'); }, 800); 
+        }
+
         const canvas = document.getElementById('star-canvas');
         const ctx = canvas.getContext('2d');
-
-        let width, height;
-        let particles = [];
-
-        // Configurazione per "tante" particelle
-        const particleCount = 200; 
-        const gravity = 0.2; // Caduta lenta ed elegante
+        let width, height, particles = [];
+        const particleCount = 100; 
 
         function resize() {
             width = window.innerWidth;
@@ -381,39 +366,28 @@
         }
 
         class Particle {
-            constructor() {
-                this.reset(true);
-            }
-
+            constructor() { this.reset(true); }
             reset(initial = false) {
                 this.x = Math.random() * width;
                 this.y = initial ? Math.random() * height : -10;
-                this.size = Math.random() * 2 + 1; // Particelle visibili
-                this.speed = (Math.random() * 0.5) + 0.2; 
-                this.opacity = Math.random() * 0.6 + 0.3;
+                this.size = Math.random() * 2 + 0.5; 
+                this.speed = (Math.random() * 0.2) + 0.1; 
+                this.opacity = Math.random() * 0.5 + 0.2;
                 this.wobble = Math.random() * Math.PI * 2;
-                this.wobbleSpeed = Math.random() * 0.02;
+                this.wobbleSpeed = Math.random() * 0.01;
             }
-
             update() {
-                this.y += this.speed + gravity;
+                this.y += this.speed; 
                 this.wobble += this.wobbleSpeed;
-                this.x += Math.sin(this.wobble) * 0.5; 
-
-                if (this.y > height) {
-                    this.reset();
-                }
+                this.x += Math.sin(this.wobble) * 0.2; 
+                if (this.y > height) this.reset();
             }
-
             draw() {
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                
-                // Colore Argento Brillante
-                ctx.fillStyle = `rgba(220, 220, 220, ${this.opacity})`;
-                ctx.shadowBlur = 6;
-                ctx.shadowColor = "rgba(255, 255, 255, 0.8)";
-                
+                ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                ctx.shadowBlur = 4;
+                ctx.shadowColor = "rgba(255, 255, 255, 0.5)";
                 ctx.fill();
                 ctx.shadowBlur = 0;
             }
@@ -421,36 +395,19 @@
 
         function initParticles() {
             resize();
-            for (let i = 0; i < particleCount; i++) {
-                particles.push(new Particle());
-            }
+            particles = [];
+            for (let i = 0; i < particleCount; i++) particles.push(new Particle());
             animateParticles();
         }
 
         function animateParticles() {
             ctx.clearRect(0, 0, width, height);
-            particles.forEach(p => {
-                p.update();
-                p.draw();
-            });
+            particles.forEach(p => { p.update(); p.draw(); });
             requestAnimationFrame(animateParticles);
         }
 
         window.addEventListener('resize', resize);
-        
-        // Avvio particelle
         initParticles();
-
-        /* --- LOGICA BUSTA --- */
-        const envelope = document.getElementById('envelope');
-        const seal = document.getElementById('seal');
-
-        seal.addEventListener('click', () => {
-            envelope.classList.add('open');
-            setTimeout(() => {
-                seal.style.display = 'none';
-            }, 200);
-        });
     </script>
 </body>
 </html>
